@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import config
+import sys
 from threading import Event
 
 def run():
@@ -13,7 +14,13 @@ def run():
         service = __import__(name).service
         service.alive = alive
         service.start()
-        service.join()
+
+    try:
+        # Block until any key pressed
+        sys.stdin.read()
+    finally:
+        print('Shutting down...')
+        app.set()
 
 if __name__ == '__main__':
     run()

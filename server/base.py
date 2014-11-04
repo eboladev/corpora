@@ -4,7 +4,7 @@ class BaseService(threading.Thread):
 
     def __init__(self, name=None):
         super(BaseService, self).__init__(name=name)
-        self.daemon = False
+        self.daemon = True
 
     def alive(self):
         return True
