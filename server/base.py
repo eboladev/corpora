@@ -1,4 +1,5 @@
 import threading
+import trace
 
 class BaseService(threading.Thread):
 
@@ -16,7 +17,7 @@ class BaseService(threading.Thread):
         raise NotImplementedError
 
     def run(self):
-        print('Starting %s service...' % self.name)
+        trace.info('Service started.')
         while self.alive():
             request = self.wait()
             self.handle(*request)

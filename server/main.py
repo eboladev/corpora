@@ -1,12 +1,14 @@
 #!/usr/bin/python
 import config
+import threading
+import trace
 import sys
-from threading import Event
 
 def run():
-    print('Starting Corpora...')
+    threading.current_thread().name = 'main'
+    trace.info('Starting Corpora.')
 
-    app = Event()
+    app = threading.Event()
     def alive():
         return not app.is_set()
 
@@ -19,7 +21,7 @@ def run():
         # Block until any key pressed
         sys.stdin.read()
     finally:
-        print('Shutting down...')
+        trace.info('Shutting down.')
         app.set()
 
 if __name__ == '__main__':
