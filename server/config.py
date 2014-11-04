@@ -1,6 +1,5 @@
-import messaging
 
-SERVICES = [messaging.service]
+SERVICES = ['messaging']
 
 # Messaging service configuration
 MESSAGING_HOST = ''

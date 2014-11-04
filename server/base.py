@@ -3,9 +3,20 @@ import threading
 class BaseService(threading.Thread):
 
     def __init__(self, name=None):
-        super.__init__(self, name=name)
+        super(BaseService, self).__init__(name=name)
         self.daemon = False
-        self.event = None
+
+    def alive(self):
+        return True
+
+    def wait(self):
+        return ()
+
+    def handle(self):
+        raise NotImplementedError
 
     def run(self):
-        raise NotImplementedError
+        print('Starting %s service...' % self.name)
+        while self.alive():
+            request = self.wait()
+            self.handle(*request)
