@@ -10,6 +10,8 @@ Window {
     title: "Corpora"
     color: "#eee"
 
+    property string currentChannel: ""
+
     Item {
         id: messageArea
         anchors {
@@ -31,6 +33,33 @@ Window {
             depth: 2
             cached: true
             fast: true
+        }
+
+        ListView {
+            id: messages
+            anchors {
+                top: parent.top
+                right: parent.right
+                bottom: footer.top
+                left: parent.left
+            }
+            topMargin: 8 * dp
+            bottomMargin: 8 * dp
+            spacing: 8 * dp
+            model: ListModel {}
+            delegate: Component {
+                Text {
+                    id: __text
+                    width: messages.width
+                    wrapMode: Text.Wrap
+                    font.family: UIConstants.sansFontFamily
+                    font.pointSize: UIConstants.bodyFontSize
+                    color: "#de000000"
+                    text: model.content ?
+                          "<font color='#00796b'><b>" + model.username + "</b>: </font>" + model.content :
+                          ""
+                }
+            }
         }
 
         Rectangle {
@@ -83,6 +112,48 @@ Window {
             bottom: parent.bottom
         }
         width: Math.min(parent.width * 0.33, 320 * dp)
+
+        Column {
+            anchors {
+                fill: parent
+                topMargin: 56 * dp
+            }
+
+            Repeater {
+                id: channels
+                delegate:
+                Component {
+                    MenuItem {
+                        text: modelData
+                        enabled: (currentChannel != modelData)
+                        onClicked: currentChannel = modelData
+                    }
+                }
+            }
+        }
+
+        Text {
+            id: statusText
+            anchors {
+                top: parent.top
+                left: parent.left
+                margins: 16 * dp
+            }
+            font.family: UIConstants.sansFontFamily
+            font.pointSize: UIConstants.bodyFontSize
+            color: UIConstants.displayTextColor
+            text: "連線中"
+        }
+
+        IconButton {
+            id: menuButton
+            anchors {
+                top: parent.top
+                right: parent.right
+                margins: 16 * dp
+            }
+            iconSource: "qrc:/assets/icon_menu"
+        }
     }
 
     Connections {
@@ -90,16 +161,19 @@ Window {
 
         onConnected: {
             console.log("Connected")
+            statusText.text = "已連線"
         }
 
         onDisconnected: {
             console.log("Disconnected")
+            statusText.text = "已離線"
         }
 
         onError: {
             console.log("Socket error " + error)
             if (error == 0) {
                 // Connection refused
+                statusText.text = "無法連線"
             }
             else {
                 // Generic error
