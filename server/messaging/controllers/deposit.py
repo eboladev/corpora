@@ -1,0 +1,3 @@
+
+def share(request):
+    pass

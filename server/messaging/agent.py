@@ -4,6 +4,7 @@ import Queue
 import socket
 import threading
 import trace
+from controllers import route
 
 class MessagingAgent(threading.Thread):
 
@@ -64,3 +65,5 @@ class MessagingAgent(threading.Thread):
         except (ValueError, KeyError):
             trace.info('Request length', len(request))
             self.queue.put(entity.response('error', reason='bad_request'))
+
+        route(request_obj)
