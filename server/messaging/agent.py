@@ -3,7 +3,7 @@ import Queue
 import socket
 import threading
 import trace
-from controllers import route
+from controllers import routes
 from entity import SMAPRequest, SMAPResponse
 
 class MessagingAgent(threading.Thread):
@@ -66,5 +66,5 @@ class MessagingAgent(threading.Thread):
         except (ValueError, KeyError):
             trace.info('Request length', len(data))
             self.queue.put(SMAPResponse('error', reason='bad_request'))
-
-        route(request)
+        else:
+            routes.route_request(request)
