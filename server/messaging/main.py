@@ -13,6 +13,7 @@ class MessagingService(BaseService):
         self.clients = []
 
         s = socket.socket()
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind((config.MESSAGING_HOST, config.MESSAGING_PORT))
         s.listen(config.MESSAGING_MAX_PENDING_CLIENTS)
         self.socket = s
