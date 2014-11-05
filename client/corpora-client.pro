@@ -4,7 +4,11 @@ TARGET = Corpora
 
 QT += qml quick network svg
 
-SOURCES += src/main.cpp
+HEADERS += \
+    src/client.h
+
+SOURCES += src/main.cpp \
+    src/client.cpp
 
 RESOURCES += qml/assets.qrc
 
