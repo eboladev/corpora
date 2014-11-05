@@ -1,10 +1,10 @@
 import config
-import entity
 import Queue
 import socket
 import threading
 import trace
 from controllers import route
+from entity import SMAPRequest, SMAPResponse
 
 class MessagingAgent(threading.Thread):
 
@@ -16,6 +16,7 @@ class MessagingAgent(threading.Thread):
         self.socket = conn
         self.host = host
         self.port = port
+        self.session = {}
 
         conn.settimeout(config.MESSAGING_WAIT_INTERVAL)
 
@@ -54,16 +55,16 @@ class MessagingAgent(threading.Thread):
         trace.info('Client {}:{} closed'.format(self.host, self.port))
 
     def handle_response(self, response):
-        data = entity.dump(response)
-        trace.info('Response', response['status'].upper(), 'length', len(data))
+        data = str(response)
+        trace.info('Response', response.status.upper(), 'length', len(data))
         self.socket.sendall(data)
 
-    def handle_request(self, request):
+    def handle_request(self, data):
         try:
-            request_obj = entity.load(request)
-            trace.info('Request', request_obj['action'].upper(), 'length', len(request))
+            request = SMAPRequest(data, self.host, self.port, self.session)
+            trace.info('Request', request.action.upper(), 'length', len(data))
         except (ValueError, KeyError):
-            trace.info('Request length', len(request))
-            self.queue.put(entity.response('error', reason='bad_request'))
+            trace.info('Request length', len(data))
+            self.queue.put(SMAPResponse('error', reason='bad_request'))
 
-        route(request_obj)
+        route(request)
