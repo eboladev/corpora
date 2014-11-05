@@ -1,10 +1,17 @@
 #include "client.h"
+#include <QJsonObject>
 
 CorporaClient::CorporaClient(QObject *parent) :
     QObject(parent)
 {
     this->m_host = "127.0.0.1";
     this->m_port = 1126;
+    this->socket = new QTcpSocket(this);
+
+    connect(socket, SIGNAL(connected()), this, SIGNAL(connected()));
+    connect(socket, SIGNAL(disconnected()), this, SIGNAL(disconnected()));
+    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SIGNAL(error(QAbstractSocket::SocketError)));
+    connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
 }
 
 QString CorporaClient::host() {
@@ -24,10 +31,10 @@ void CorporaClient::setPort(const int &value) {
 }
 
 void CorporaClient::connectToServer() {
-
+    socket.connectToHost(m_host, m_port);
 }
 
-void CorporaClient::sendEvent(QObject obj) {
+void CorporaClient::sendEvent(const QVariantMap &data) {
 
 }
 

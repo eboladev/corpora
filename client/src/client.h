@@ -20,16 +20,17 @@ public:
     void setPort(const int &value);
 
     Q_INVOKABLE void connectToServer();
-    Q_INVOKABLE void sendEvent(QObject obj);
+    Q_INVOKABLE void sendEvent(const QVariantMap &data);
     Q_INVOKABLE void disconnectFromServer();
 
 signals:
-    void serverConnected();
-    void serverEvent(QObject obj);
-    void serverDisconnected();
+    void connected();
+    void serverEvent(const QVariantMap &data);
+    void disconnected();
+    void error(QAbstractSocket::SocketError);
 
-public slots:
-
+private slots:
+    void onReadyRead();
 
 private:
     QString m_host;
