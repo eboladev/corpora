@@ -25,9 +25,9 @@ public:
 
 signals:
     void connected();
-    void serverEvent(const QVariantMap &data);
+    void serverEvent(const QVariant &data);
     void disconnected();
-    void error(QAbstractSocket::SocketError);
+    void error(QAbstractSocket::SocketError error);
 
 private slots:
     void readFromServer();

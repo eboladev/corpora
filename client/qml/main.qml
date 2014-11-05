@@ -19,6 +19,16 @@ Window {
         onDisconnected: {
             console.log("Disconnected")
         }
+
+        onError: {
+            console.log("Socket error " + error)
+            if (error == 0) {
+                // Connection refused
+            }
+            else {
+                // Generic error
+            }
+        }
     }
 
     Component.onCompleted: {

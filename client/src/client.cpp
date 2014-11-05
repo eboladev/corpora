@@ -1,4 +1,5 @@
 #include "client.h"
+#include <QJsonDocument>
 #include <QJsonObject>
 
 CorporaClient::CorporaClient(QObject *parent) :
@@ -35,13 +36,27 @@ void CorporaClient::connectToServer() {
 }
 
 void CorporaClient::readFromServer() {
+    if (socket->canReadLine()) {
+        QByteArray buffer;
+        buffer = socket->readLine();
 
+        if (buffer.length() > 0) {
+            QJsonDocument doc = QJsonDocument::fromJson(buffer);
+
+            if (doc.isObject())
+                this->serverEvent(doc.object());
+        }
+    }
 }
 
 void CorporaClient::sendEvent(const QVariantMap &data) {
+    QJsonDocument doc = QJsonDocument::fromVariant(data);
+    QByteArray buffer = doc.toJson(QJsonDocument::Compact);
+    buffer.append('\n');
 
+    socket->write(buffer);
 }
 
 void CorporaClient::disconnectFromServer() {
-
+    socket->disconnectFromHost();
 }
