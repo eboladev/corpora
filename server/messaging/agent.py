@@ -1,4 +1,5 @@
 import config
+import entity
 import Queue
 import socket
 import threading
@@ -29,8 +30,9 @@ class MessagingAgent(threading.Thread):
             except Queue.Empty: pass
 
             if response:
-                trace.info('Response', response)
-                pass
+                data = entity.dump(response)
+                trace.info('Response', response['action'].upper(), 'length', len(data))
+                self.socket.sendall(data)
 
             try:
                 data = self.socket.recv(config.MESSAGING_BUFFER_SIZE)
@@ -40,14 +42,16 @@ class MessagingAgent(threading.Thread):
                     end = buf.find('\n\n')
                     if end >= 0:
                         request = buf[:end]
-                        buf = buf[end + 2:]
+                        buf = buf[end+2:]
                 else:
                     break   # Connection closed
             except socket.timeout: pass
 
             if request:
-                trace.info('Request', request.strip())
-                pass
+                try:
+                    request_obj = entity.load(request)
+                except ValueError:
+                    self.queue.put(entity.response('error', reason='bad_request'))
 
         self.socket.close()
         trace.info('Client {}:{} closed'.format(self.host, self.port))
