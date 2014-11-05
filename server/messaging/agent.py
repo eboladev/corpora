@@ -27,16 +27,11 @@ class MessagingAgent(threading.Thread):
         while True:
             try:
                 response = self.queue.get_nowait()
+                self.handle_response(response)
             except Queue.Empty: pass
-
-            if response:
-                data = entity.dump(response)
-                trace.info('Response', response['action'].upper(), 'length', len(data))
-                self.socket.sendall(data)
 
             try:
                 data = self.socket.recv(config.MESSAGING_BUFFER_SIZE)
-
                 if data:
                     buf += data
                     end = buf.find('\n\n')
@@ -47,11 +42,20 @@ class MessagingAgent(threading.Thread):
                     break   # Connection closed
             except socket.timeout: pass
 
-            if request:
-                try:
-                    request_obj = entity.load(request)
-                except ValueError:
-                    self.queue.put(entity.response('error', reason='bad_request'))
+            if request: self.handle_request(request)
 
         self.socket.close()
         trace.info('Client {}:{} closed'.format(self.host, self.port))
+
+    def handle_response(self, response):
+        data = entity.dump(response)
+        trace.info('Response', response['status'].upper(), 'length', len(data))
+        self.socket.sendall(data)
+
+    def handle_request(self, request):
+        try:
+            request_obj = entity.load(request)
+            trace.info('Request', request_obj['action'].upper(), 'length', len(request))
+        except ValueError:
+            trace.info('Request length', len(request))
+            self.queue.put(entity.response('error', reason='bad_request'))
