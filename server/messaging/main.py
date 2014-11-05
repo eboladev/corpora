@@ -1,12 +1,16 @@
 import config
 import trace
 import socket
+from agent import MessagingAgent
 from base import BaseService
 
 class MessagingService(BaseService):
 
     def __init__(self):
         super(MessagingService, self).__init__('messaging')
+
+        self.counter = 0
+        self.clients = []
 
         s = socket.socket()
         s.bind((config.MESSAGING_HOST, config.MESSAGING_PORT))
@@ -20,6 +24,8 @@ class MessagingService(BaseService):
 
     def handle(self, conn, addr):
         (host, port) = addr
-        trace.info('Client', host, ':', port, 'connected')
-        conn.sendall('Hello world!\n')
-        conn.close()
+        self.counter += 1
+
+        agent = MessagingAgent(self.counter, conn, host, port)
+        self.clients.append(agent)
+        agent.start()
