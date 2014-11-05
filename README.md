@@ -7,4 +7,14 @@ National Taiwan University.
 
 Authored by B02 [Poren Chiang](http://poren.tw), a NTU Legal Science sophomore.
 
+Compilation
+---
+This projected is tested under the following environment:
+
+* Mac OS X 10.9
+* Python 2.7.5 (server)
+* Qt 5.3 (client)
+
+License
+---
 This project is released under MIT License.
