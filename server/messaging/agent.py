@@ -20,18 +20,34 @@ class MessagingAgent(threading.Thread):
     def run(self):
         trace.info('Accepted client from {}:{}'.format(self.host, self.port))
 
+        buf, request = '', ''
+        response = None
+
         while True:
             try:
                 response = self.queue.get_nowait()
             except Queue.Empty: pass
 
+            if response:
+                trace.info('Response', response)
+                pass
+
             try:
                 data = self.socket.recv(config.MESSAGING_BUFFER_SIZE)
-                if not data:
-                    break   # Connection closed
+
+                if data:
+                    buf += data
+                    end = buf.find('\n\n')
+                    if end >= 0:
+                        request = buf[:end]
+                        buf = buf[end + 2:]
                 else:
-                    trace.info('Received', str(data).strip())
+                    break   # Connection closed
             except socket.timeout: pass
+
+            if request:
+                trace.info('Request', request.strip())
+                pass
 
         self.socket.close()
         trace.info('Client {}:{} closed'.format(self.host, self.port))
