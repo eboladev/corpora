@@ -10,7 +10,7 @@ Window {
     title: "Corpora"
     color: "#eee"
 
-    property string currentChannel: ""
+    property string currentChannel: "#general"
 
     Item {
         id: messageArea
@@ -45,8 +45,12 @@ Window {
             }
             topMargin: 8 * dp
             bottomMargin: 8 * dp
+            leftMargin: 8 * dp
+            rightMargin: 8 * dp
             spacing: 8 * dp
-            model: ListModel {}
+            model: ListModel {
+                ListElement { username: "system"; content: "請以 /login 登入" }
+            }
             delegate: Component {
                 Text {
                     id: __text
@@ -97,7 +101,12 @@ Window {
 
                 enabled: (field.length > 0)
                 onClicked: {
-                    client.sendEvent({"action": "message", "content": field.text})
+                    if (field.text.indexOf("/login ") == 0) {
+                        field.text = field.text.substring(7)
+                        client.sendEvent({"action": "login", "user": field.text})
+                    }
+                    else
+                        client.sendEvent({"action": "message", "content": field.text, "channel": currentChannel})
                     field.text = ""
                 }
             }
@@ -121,8 +130,7 @@ Window {
 
             Repeater {
                 id: channels
-                delegate:
-                Component {
+                delegate: Component {
                     MenuItem {
                         text: modelData
                         enabled: (currentChannel != modelData)
@@ -167,6 +175,27 @@ Window {
         onDisconnected: {
             console.log("Disconnected")
             statusText.text = "已離線"
+        }
+
+        onServerEvent: {
+            if (data.status == "message")
+                messages.model.append({"username": data.username, "content": data.content})
+            else if (data.status == "success") {
+                if (data.reason == "logged_in") {
+                    messages.model.append({"username": "system", "content": "登入成功！"})
+                    client.sendEvent({"action": "join", "channel": "#general"})
+                }
+                else if (data.reason == "joined_channel") {
+                    channels.model = [data.channel]
+                    messages.model.append({"username": "system", "content": "已加入頻道 " + data.channel })
+                }
+            }
+            else if (data.status == "error") {
+                if (data.reason == "name_in_use") {
+                    messages.model.append({"username": "system", "content": "名稱已被使用。"})
+                }
+            }
+            console.log("Server replied with status " + data.status)
         }
 
         onError: {

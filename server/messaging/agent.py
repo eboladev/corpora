@@ -8,7 +8,7 @@ from entity import SMAPRequest, SMAPResponse
 
 class MessagingAgent(threading.Thread):
 
-    def __init__(self, id, conn, host, port):
+    def __init__(self, service, id, conn, host, port):
         super(MessagingAgent, self).__init__()
         self.daemon = True
         self.name = 'messaging-{}'.format(id)
@@ -16,7 +16,8 @@ class MessagingAgent(threading.Thread):
         self.socket = conn
         self.host = host
         self.port = port
-        self.session = {}
+        self.session = { "id": self.name }
+        self.service = service
 
         conn.settimeout(config.MESSAGING_WAIT_INTERVAL)
 
@@ -55,13 +56,13 @@ class MessagingAgent(threading.Thread):
         trace.info('Client {}:{} closed'.format(self.host, self.port))
 
     def handle_response(self, response):
-        data = str(response)
+        data = str(response) + '\n'
         trace.info('Response', response.status.upper(), 'length', len(data))
         self.socket.sendall(data)
 
     def handle_request(self, data):
         try:
-            request = SMAPRequest(data, self.host, self.port, self.session)
+            request = SMAPRequest(data, self.service, self.host, self.port, self.session)
             trace.info('Request', request.action.upper(), 'length', len(data))
         except (ValueError, KeyError):
             trace.info('Request length', len(data))

@@ -2,7 +2,7 @@ import json
 
 class SMAPRequest(dict):
 
-    def __init__(self, data, host=None, port=None, session=None):
+    def __init__(self, data, service=None, host=None, port=None, session=None):
         data = data.decode('utf-8', errors='replace')
         params = json.loads(data)
         super(SMAPRequest, self).__init__(self, **params)
@@ -11,12 +11,13 @@ class SMAPRequest(dict):
         self.host = host
         self.port = port
         self.session = session
+        self.service = service
 
 class SMAPResponse(dict):
 
     def __init__(self, status, **params):
         params['status'] = status
-        super(SMAPResponse, self).__init__(self, params)
+        super(SMAPResponse, self).__init__(self, **params)
 
     def __str__(self):
         return json.dumps(self, ensure_ascii=False).encode('utf-8')

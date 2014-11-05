@@ -3,6 +3,7 @@ import trace
 import socket
 from agent import MessagingAgent
 from base import BaseService
+from threading import Lock
 
 class MessagingService(BaseService):
 
@@ -11,6 +12,9 @@ class MessagingService(BaseService):
 
         self.counter = 0
         self.clients = []
+        self.users = {}
+        self.channels = {}
+        self.lock = Lock()
 
         s = socket.socket()
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -27,6 +31,6 @@ class MessagingService(BaseService):
         (host, port) = addr
         self.counter += 1
 
-        agent = MessagingAgent(self.counter, conn, host, port)
+        agent = MessagingAgent(self, self.counter, conn, host, port)
         self.clients.append(agent)
         agent.start()
