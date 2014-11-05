@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
     app.setOrganizationDomain("ntuosc.org");
 
     QQmlApplicationEngine engine;
-    CorpusClient client(app);
+    CorporaClient client(&app);
     qreal dp = 1; //QGuiApplication::primaryScreen()->physicalDotsPerInch() / 160.0;
     engine.rootContext()->setContextProperty("dp", dp);
     engine.rootContext()->setContextProperty("client", &client);

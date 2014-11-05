@@ -30,12 +30,12 @@ signals:
     void error(QAbstractSocket::SocketError);
 
 private slots:
-    void onReadyRead();
+    void readFromServer();
 
 private:
     QString m_host;
     int m_port;
-    QTcpSocket socket;
+    QTcpSocket* socket;
 
 };
 

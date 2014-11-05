@@ -11,7 +11,7 @@ CorporaClient::CorporaClient(QObject *parent) :
     connect(socket, SIGNAL(connected()), this, SIGNAL(connected()));
     connect(socket, SIGNAL(disconnected()), this, SIGNAL(disconnected()));
     connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SIGNAL(error(QAbstractSocket::SocketError)));
-    connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+    connect(socket, SIGNAL(readyRead()), this, SLOT(readFromServer()));
 }
 
 QString CorporaClient::host() {
@@ -31,7 +31,11 @@ void CorporaClient::setPort(const int &value) {
 }
 
 void CorporaClient::connectToServer() {
-    socket.connectToHost(m_host, m_port);
+    socket->connectToHost(m_host, m_port);
+}
+
+void CorporaClient::readFromServer() {
+
 }
 
 void CorporaClient::sendEvent(const QVariantMap &data) {
