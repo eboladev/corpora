@@ -9,10 +9,21 @@ class Field(object):
         self.default = default
 
     def __get__(self, obj, type):
-        pass
+        if obj:
+            return obj._state.get(self.name, self.default)
+        else:
+            return obj
 
     def __set__(self, obj, value):
-        pass
+        if not obj:
+            raise AttributeError
+        elif not self.null and value is None:
+            raise ValueError
+        else:
+            obj._state[self.name] = value
+
+    def __repr__(self):
+        return '<%s: %s>' % (self.__class__.__name__, self.name)
 
 
 class RelatedField(Field):

@@ -1,34 +1,29 @@
 import fields
+import resolver
 from query import Queryable
-from resolver import register_model
 
 class ModelBase(type):
 
     def __new__(cls, name, bases, attrs):
-        super_new = super(ModelBase, cls).__new__
+        new_class = super(ModelBase, cls).__new__(cls, name, bases, attrs)
+        local_fields = []
 
-        parents = [b for b in bases if isinstance(b, ModelBase)]
-        if not parents:
-            super_new(cls, name, bases, attrs)
+        for attr, field in attrs.iteritems():
+            if isinstance(field, fields.Field):
+                field.name = attr
+                local_fields.append(attr)
 
-        # Class creation
-        new_class = super_new(cls, name, bases, attrs)
+        cls.local_fields = tuple(local_fields)
+        resolver.register_model(cls)
         return new_class
 
 class Model(Queryable):
     __metaclass__ = ModelBase
 
-    def __new__(cls):
-        for field in cls.__dict__:
-            if not isinstance(field, fields.Field):
-                continue
-
-            # Do something with fields
-
-        register_model(cls)
-
     def __init__(self, **kwargs):
-        pass
+        self._state = {}
+        for key, value in kwargs:
+            setattr(self, key, value)
 
     @classmethod
     def all(cls):
