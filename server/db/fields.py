@@ -32,8 +32,8 @@ class RelatedField(Field):
         super(Field, self).__init__(**options)
         resolver.register_resolve(othermodel, self._resolve)
 
-    def _resolve(othermodel):
-        pass
+    def _resolve(self, othermodel):
+        raise NotImplementedError
 
 
 class OneToOneField(RelatedField):
@@ -43,6 +43,14 @@ class OneToOneField(RelatedField):
 
     def __set__(self, obj, value):
         pass
+
+    def _resolve(self, othermodel):
+        if self.related_name is None:
+            related_name = self.name.lower()
+
+        # Create corresponding field
+        if related_name != '':
+            setattr(othermodel, related_name, OneToOneField())
 
 
 class ForeignKey(RelatedField):
