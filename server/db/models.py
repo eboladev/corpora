@@ -1,5 +1,6 @@
 import fields
 import resolver
+from manager import Manager
 from query import Queryable
 
 class ModelBase(type):
@@ -27,7 +28,8 @@ class Model(Queryable):
 
     @classmethod
     def all(cls):
-        pass
+        with Manager() as manager:
+            return manager.table(cls)
 
     def save(self):
         pass

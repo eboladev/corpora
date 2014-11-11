@@ -16,9 +16,15 @@ class Manager(object):
 
     def __init__(self):
         self.lock = Lock()
+        self.tables = {}
 
     def __enter__(self):
         self.lock.acquire()
 
     def __exit__(self):
         self.lock.release()
+
+    def table(self, cls):
+        if cls not in self.tables:
+            self.tables[cls] = []
+        return self.tables[cls]
