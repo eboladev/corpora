@@ -19,12 +19,28 @@ class RelatedField(Field):
 
 
 class OneToOneField(RelatedField):
-    pass
+
+    def __get__(self, obj, type=None):
+        pass
+
+    def __set__(self, obj, value):
+        pass
 
 
 class ForeignKey(RelatedField):
-    pass
+
+    def __get__(self, obj, type=None):
+        pass
+
+    def __set__(self, obj, value):
+        pass
+
 
 
 class ManyToManyField(RelatedField, Queryable):
-    pass
+
+    def __get__(self, obj, type=None):
+        pass
+
+    def __set__(self, obj, value):
+        pass
