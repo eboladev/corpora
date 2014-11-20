@@ -1,6 +1,9 @@
 
 SERVICES = ['messaging']
 
+# Database settings
+DATABASE_NAME = 'local.db'
+
 # Messaging service configuration
 MESSAGING_HOST = ''
 MESSAGING_PORT = 1126
