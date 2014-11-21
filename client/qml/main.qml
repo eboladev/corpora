@@ -240,7 +240,7 @@ Window {
                      messages.model.append({"username": "system", "content": "已登入。"})
                 }
             }
-            console.log("Server replied with status " + data.status)
+            console.log("Server replied with status " + data.status + (data.reason ? " " + data.reason : ""))
         }
 
         onError: {

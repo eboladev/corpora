@@ -33,7 +33,7 @@ class Channel(BaseModel):
 
     def add_user(self, user):
         try:
-            return UserChannel(user=user, channel=self).save()
+            return UserChannel(user=user, channel=self).save(force_insert=True)
         except models.IntegrityError:
             return False
 

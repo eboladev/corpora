@@ -62,7 +62,7 @@ def leave(request):
 
         if channel.contains_user(user):
             channel.remove_user(user)
-            for u in channel.users:
+            for u in channel.users.iterator():
                 request.agent.dispatch(u.username, SMAPResponse('left', channel=channel, username=username))
 
             request.agent.queue.put(SMAPResponse('success', reason='left_channel', channel=channel_name))
@@ -94,8 +94,8 @@ def message(request):
             return
 
         if channel.contains_user(user):
-            for u in channel.users:
-                request.agent.dispatch(SMAPResponse('message', channel=channel_name, username=username, content=content))
+            for u in channel.users.iterator():
+                request.agent.dispatch(u.username, SMAPResponse('message', channel=channel_name, username=username, content=content))
         else:
             request.agent.queue.put(SMAPResponse('error', reason='not_joined_yet'))
 
