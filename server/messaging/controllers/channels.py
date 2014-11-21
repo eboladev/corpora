@@ -34,9 +34,9 @@ def join(request):
         channel.add_user(user)
         for u in channel.users:
             request.agent.dispatch(u.username, SMAPResponse('user',
-                channel=channel, username=username, email=hashlib.md5(user.email).hexdigest()))
+                channel=channel.name, username=username, email=hashlib.md5(user.email).hexdigest()))
 
-        request.agent.queue.put(SMAPResponse('success', reason='joined_channel', channel=channel_name))
+        request.agent.queue.put(SMAPResponse('success', reason='joined_channel', channel=channel.name))
 
 def leave(request):
     try:
@@ -63,9 +63,9 @@ def leave(request):
         if channel.contains_user(user):
             channel.remove_user(user)
             for u in channel.users.iterator():
-                request.agent.dispatch(u.username, SMAPResponse('left', channel=channel, username=username))
+                request.agent.dispatch(u.username, SMAPResponse('left', channel=channel.name, username=username))
 
-            request.agent.queue.put(SMAPResponse('success', reason='left_channel', channel=channel_name))
+            request.agent.queue.put(SMAPResponse('success', reason='left_channel', channel=channel.name))
         else:
             request.agent.queue.put(SMAPResponse('error', reason='not_joined_yet'))
 
@@ -94,8 +94,9 @@ def message(request):
             return
 
         if channel.contains_user(user):
-            for u in channel.users.iterator():
-                request.agent.dispatch(u.username, SMAPResponse('message', channel=channel_name, username=username, content=content))
+            Message.create(user=user, channel=channel, content=content)
+            for u in channel.users:
+                request.agent.dispatch(u.username, SMAPResponse('message', channel=channel.name, username=username, content=content))
         else:
             request.agent.queue.put(SMAPResponse('error', reason='not_joined_yet'))
 

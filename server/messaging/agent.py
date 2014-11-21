@@ -73,7 +73,8 @@ class MessagingAgent(threading.Thread):
             routes.route_request(request)
 
     def register(self, username):
-        self.user = username
+        with self.service.lock:
+            self.user = username
 
     def dispatch(self, username, response):
-        self.service.dispatch(self, username, response)
+        self.service.dispatch(username, response)

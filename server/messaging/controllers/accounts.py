@@ -31,7 +31,7 @@ def login(request):
         user.last_seen = datetime.now()
         user.save()
 
-        request.agent.register(user)
+        request.agent.register(username)
         request.session['user'] = username
         request.agent.queue.put(SMAPResponse('success', reason='logged_in'))
 

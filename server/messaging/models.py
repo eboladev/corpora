@@ -1,5 +1,6 @@
 import config
 import peewee as models
+from datetime import datetime
 
 db = models.SqliteDatabase(config.DATABASE_NAME)
 
@@ -14,11 +15,11 @@ class User(BaseModel):
     password = models.CharField(max_length=64)
     email = models.CharField()
     is_active = models.BooleanField(default=False)
-    last_seen = models.DateTimeField()
+    last_seen = models.DateTimeField(default=datetime.now)
 
     @property
     def channels(self):
-        return User.select().join(UserChannel).join(Channel).where(UserChannel.user == self)
+        return Channel.select().join(UserChannel).join(User).where(UserChannel.user == self)
 
 
 class Channel(BaseModel):
@@ -29,11 +30,11 @@ class Channel(BaseModel):
 
     @property
     def users(self):
-        return Channel.select().join(UserChannel).join(User).where(UserChannel.channel == self)
+        return User.select().join(UserChannel).join(Channel).where(UserChannel.channel == self)
 
     def add_user(self, user):
         try:
-            return UserChannel(user=user, channel=self).save(force_insert=True)
+            return UserChannel.create(user=user, channel=self)
         except models.IntegrityError:
             return False
 
@@ -49,7 +50,7 @@ class Message(BaseModel):
     user = models.ForeignKeyField(User)
     channel = models.ForeignKeyField(Channel)
     content = models.TextField()
-    timestamp = models.DateTimeField()
+    timestamp = models.DateTimeField(default=datetime.now)
 
 
 class UserChannel(BaseModel):
