@@ -19,9 +19,8 @@ def login(request):
             request.agent.queue.put(SMAPResponse('error', reason='not_registered'))
             return
 
-        h = hashlib.sha1()
-        h.update(password)
-        if user.password != h.hexdigest():
+        hash_value = hashlib.sha1(password).hexdigest()
+        if user.password != hash_value:
             request.agent.queue.put(SMAPResponse('error', reason='password_invalid'))
             return
         elif user.is_active:
@@ -70,12 +69,9 @@ def register(request):
 
         user = User()
         user.username = username
+        user.password = hashlib.sha1(password).hexdigest()
         user.email = email
         user.last_seen = datetime.now()
-
-        h = hashlib.sha1()
-        h.update(password)
-        user.password = h.hexdigest()
 
         user.save()
         request.agent.queue.put(SMAPResponse('success', reason='registered'))

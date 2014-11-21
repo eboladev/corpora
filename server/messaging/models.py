@@ -23,12 +23,25 @@ class User(BaseModel):
 
 class Channel(BaseModel):
 
+    owner = models.ForeignKeyField(User)
     name = models.CharField(index=True, unique=True, max_length=32)
     is_private = models.BooleanField(default=False)
 
     @property
     def users(self):
         return Channel.select().join(UserChannel).join(User).where(UserChannel.channel == self)
+
+    def add_user(self, user):
+        try:
+            return UserChannel(user=user, channel=self).save()
+        except models.IntegrityError:
+            return False
+
+    def remove_user(self, user):
+        return UserChannel.delete().where((UserChannel.user == user) & (UserChannel.channel == self)).execute()
+
+    def contains_user(self, user):
+        return (UserChannel.select().where((UserChannel.user == user) & (UserChannel.channel == self)).count() > 0)
 
 
 class Message(BaseModel):
