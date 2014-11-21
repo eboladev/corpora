@@ -98,13 +98,7 @@ def message(request):
                 request.agent.dispatch(SMAPResponse('message', channel=channel_name, username=username, content=content))
         else:
             request.agent.queue.put(SMAPResponse('error', reason='not_joined_yet'))
-    request.service.lock.acquire()
-    channel = request['channel']
-    user = request.session['user']
-    for u in request.service.channels[channel]:
-        c = [client for client in request.service.clients if client.name == request.service.users[u]][0]
-        c.queue.put(SMAPResponse("message", channel=channel, username=user, content=request['content']))
-    request.service.lock.release()
+
 
 def disconnected(request):
     pass

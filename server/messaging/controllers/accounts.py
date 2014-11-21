@@ -25,14 +25,14 @@ def login(request):
             return
         elif user.is_active:
             request.agent.queue.put(SMAPResponse('error', reason='already_logged_in'))
-            return
+            # return    # IRC-like
 
         user.is_active = True
         user.last_seen = datetime.now()
         user.save()
 
         request.agent.register(user)
-        request.session['user'] = user
+        request.session['user'] = username
         request.agent.queue.put(SMAPResponse('success', reason='logged_in'))
 
 def logout(request):
@@ -64,7 +64,7 @@ def register(request):
     request.db.connect()
     with request.db.transaction():
         if User.select().where(User.username == username).count() > 0:
-            request.agent.queue.put(SMAPResponse('error', reason='already_registered'))
+            request.agent.queue.put(SMAPResponse('error', reason='name_in_use'))
             return
 
         user = User()

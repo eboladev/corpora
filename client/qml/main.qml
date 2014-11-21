@@ -118,13 +118,13 @@ Window {
                             messages.model.append({"username": "system", "content": "語法：/register <i>username</i> <i>email</i> <i>password</i>" })
                     }
                     else if (values[0] == "/join") {
-                        if (values.length == 3)
+                        if (values.length == 2)
                             client.sendEvent({"action": "join", "user": currentUser, "channel": values[1]})
                         else
                             messages.model.append({"username": "system", "content": "語法：/join <i>channel</i>" })
                     }
                     else if (values[0] == "/leave") {
-                        if (values.length == 3)
+                        if (values.length == 2)
                             client.sendEvent({"action": "leave", "user": currentUser, "channel": values[1]})
                         else
                             messages.model.append({"username": "system", "content": "語法：/leave <i>channel</i>" })
