@@ -2,6 +2,7 @@
 ROUTE_PATTERNS = (
     ('login', 'accounts.login'),
     ('logout', 'accounts.logout'),
+    ('register', 'accounts.register'),
     ('join', 'channels.join'),
     ('leave', 'channels.leave'),
     ('message', 'channels.message'),

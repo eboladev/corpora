@@ -2,16 +2,17 @@ import json
 
 class SMAPRequest(dict):
 
-    def __init__(self, data, service=None, host=None, port=None, session=None):
+    def __init__(self, data, agent=None):
         data = data.decode('utf-8', errors='replace')
         params = json.loads(data)
         super(SMAPRequest, self).__init__(self, **params)
 
         self.action = params['action']
-        self.host = host
-        self.port = port
-        self.session = session
-        self.service = service
+        self.agent = agent
+        self.host = agent.host
+        self.port = agent.port
+        self.session = agent.session
+        self.db = agent.db
 
 class SMAPResponse(dict):
 

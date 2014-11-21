@@ -1,4 +1,5 @@
 import config
+import models
 import Queue
 import socket
 import threading
@@ -14,10 +15,11 @@ class MessagingAgent(threading.Thread):
         self.name = 'messaging-{}'.format(id)
         self.queue = Queue.Queue()
         self.socket = conn
+        self.service = service
         self.host = host
         self.port = port
         self.session = { "id": self.name }
-        self.service = service
+        self.db = models.create_database()
 
         conn.settimeout(config.MESSAGING_WAIT_INTERVAL)
 
@@ -62,10 +64,16 @@ class MessagingAgent(threading.Thread):
 
     def handle_request(self, data):
         try:
-            request = SMAPRequest(data, self.service, self.host, self.port, self.session)
+            request = SMAPRequest(data, self)
             trace.info('Request', request.action.upper(), 'length', len(data))
         except (ValueError, KeyError):
             trace.info('Request length', len(data))
             self.queue.put(SMAPResponse('error', reason='bad_request'))
         else:
             routes.route_request(request)
+
+    def register(self, username):
+        self.user = username
+
+    def dispatch(self, username, response):
+        self.service.dispatch(self, username, response)

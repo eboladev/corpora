@@ -1,19 +1,81 @@
+import hashlib
+from datetime import datetime
 from messaging.entity import SMAPResponse
+from messaging.models import User
 
 def login(request):
-    request.service.lock.acquire()
-    user = request['user']
-    if user not in request.service.users:
-        request.service.users[user] = request.session['id']
+    try:
+        username = request['user']
+        password = request['password']
+    except KeyError:
+        request.agent.queue.put(SMAPResponse('error', reason='params_invalid'))
+        return
+
+    request.db.connect()
+    with request.db.transaction():
+        try:
+            user = User.get(User.username == username)
+        except User.DoesNotExist:
+            request.agent.queue.put(SMAPResponse('error', reason='not_registered'))
+            return
+
+        h = hashlib.sha1()
+        h.update(password)
+        if user.password != h.hexdigest():
+            request.agent.queue.put(SMAPResponse('error', reason='password_invalid'))
+            return
+        elif user.is_active:
+            request.agent.queue.put(SMAPResponse('error', reason='already_logged_in'))
+            return
+
+        user.is_active = True
+        user.last_seen = datetime.now()
+        user.save()
+
+        request.agent.register(user)
         request.session['user'] = user
-        for client in request.service.clients:
-            if client.name == request.session['id']:
-                client.queue.put(SMAPResponse('success', reason='logged_in'))
-    else:
-        for client in request.service.clients:
-            if client.name == request.session['id']:
-                client.queue.put(SMAPResponse('error', reason='name_in_use'))
-    request.service.lock.release()
+        request.agent.queue.put(SMAPResponse('success', reason='logged_in'))
 
 def logout(request):
-    pass
+    try:
+        username = request.session['user']
+    except KeyError:
+        request.agent.queue.put(SMAPResponse('error', reason='not_logged_in'))
+
+    request.db.connect()
+    with request.db.transaction():
+        user = User.get(User.username == username)
+        user.is_active = False
+        user.last_seen = datetime.now()
+        user.save()
+
+        request.session['user'] = None
+        request.agent.queue.put(SMAPResponse('success', reason='logged_out'))
+
+
+def register(request):
+    try:
+        username = request['user']
+        password = request['password']
+        email = request['email']
+    except KeyError:
+        request.agent.queue.put(SMAPResponse('error', reason='params_invalid'))
+        return
+
+    request.db.connect()
+    with request.db.transaction():
+        if User.select().where(User.username == username).count() > 0:
+            request.agent.queue.put(SMAPResponse('error', reason='already_registered'))
+            return
+
+        user = User()
+        user.username = username
+        user.email = email
+        user.last_seen = datetime.now()
+
+        h = hashlib.sha1()
+        h.update(password)
+        user.password = h.hexdigest()
+
+        user.save()
+        request.agent.queue.put(SMAPResponse('success', reason='registered'))

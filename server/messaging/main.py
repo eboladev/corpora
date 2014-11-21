@@ -12,8 +12,6 @@ class MessagingService(BaseService):
 
         self.counter = 0
         self.clients = []
-        self.users = {}
-        self.channels = {}
         self.lock = Lock()
 
         s = socket.socket()
@@ -32,5 +30,14 @@ class MessagingService(BaseService):
         self.counter += 1
 
         agent = MessagingAgent(self, self.counter, conn, host, port)
-        self.clients.append(agent)
+        agent.user = None   # Attached property
+
+        with self.lock:
+            self.clients.append(agent)
         agent.start()
+
+    def dispatch(self, user, obj):
+        with self.lock:
+            for agent in self.clients:
+                if agent.user == user:
+                    agent.queue.put(obj)

@@ -11,6 +11,7 @@ class BaseModel(models.Model):
 class User(BaseModel):
 
     username = models.CharField(index=True, unique=True, max_length=32)
+    password = models.CharField(max_length=64)
     email = models.CharField()
     is_active = models.BooleanField(default=False)
     last_seen = models.DateTimeField()
@@ -46,6 +47,9 @@ class UserChannel(BaseModel):
     class Meta:
         primary_key = models.CompositeKey('user', 'channel')
 
+
+def create_database():
+    return models.SqliteDatabase(config.DATABASE_NAME, threadlocals=True)
 
 def create_tables():
     db.connect()
