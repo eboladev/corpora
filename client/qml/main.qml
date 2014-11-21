@@ -11,6 +11,7 @@ Window {
     color: "#eee"
 
     property string currentChannel: "#general"
+    property string currentUser: ""
 
     Item {
         id: messageArea
@@ -101,12 +102,37 @@ Window {
 
                 enabled: (field.length > 0)
                 onClicked: {
-                    if (field.text.indexOf("/login ") == 0) {
-                        field.text = field.text.substring(7)
-                        client.sendEvent({"action": "login", "user": field.text})
+                    var values = field.text.split(' ')
+                    if (values[0] == "/login") {
+                        if (values.length == 3) {
+                            currentUser = values[1]
+                            client.sendEvent({"action": "login", "user": values[1], "password": values[2]})
+                        }
+                        else
+                            messages.model.append({"username": "system", "content": "語法：/login <i>username</i> <i>password</i>" })
                     }
-                    else
+                    else if (values[0] == "/register") {
+                        if (values.length == 4)
+                            client.sendEvent({"action": "register", "user": values[1], "email": values[2], "password": values[3]})
+                        else
+                            messages.model.append({"username": "system", "content": "語法：/register <i>username</i> <i>email</i> <i>password</i>" })
+                    }
+                    else if (values[0] == "/join") {
+                        if (values.length == 3)
+                            client.sendEvent({"action": "join", "user": currentUser, "channel": values[1]})
+                        else
+                            messages.model.append({"username": "system", "content": "語法：/join <i>channel</i>" })
+                    }
+                    else if (values[0] == "/leave") {
+                        if (values.length == 3)
+                            client.sendEvent({"action": "leave", "user": currentUser, "channel": values[1]})
+                        else
+                            messages.model.append({"username": "system", "content": "語法：/leave <i>channel</i>" })
+                    }
+                    else {
                         client.sendEvent({"action": "message", "content": field.text, "channel": currentChannel})
+                    }
+
                     field.text = ""
                 }
             }
@@ -186,13 +212,32 @@ Window {
                     client.sendEvent({"action": "join", "channel": "#general"})
                 }
                 else if (data.reason == "joined_channel") {
-                    channels.model = [data.channel]
+                    channels.model = [data.channel] + (channels.model || [])
                     messages.model.append({"username": "system", "content": "已加入頻道 " + data.channel })
+                }
+                else if (data.reason == "left_channel") {
+                    channels.model = [data.channel] + (channels.model || [])
+                    messages.model.append({"username": "system", "content": "已離開頻道 " + data.channel })
+                }
+                else if (data.reason == "user") {
+                    messages.model.append({"username": "system", "content": data.username + " 已加入頻道" })
+                }
+                else if (data.reason == "left") {
+                    messages.model.append({"username": "system", "content": data.username + " 已離開頻道" })
                 }
             }
             else if (data.status == "error") {
                 if (data.reason == "name_in_use") {
                     messages.model.append({"username": "system", "content": "名稱已被使用。"})
+                }
+                else if (data.reason == "not_registered") {
+                     messages.model.append({"username": "system", "content": "使用者未註冊。"})
+                }
+                else if (data.reason == "password_invalid") {
+                     messages.model.append({"username": "system", "content": "密碼錯誤。"})
+                }
+                else if (data.reason == "already_logged_in") {
+                     messages.model.append({"username": "system", "content": "已登入。"})
                 }
             }
             console.log("Server replied with status " + data.status)
